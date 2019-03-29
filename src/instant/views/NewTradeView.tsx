@@ -1,7 +1,6 @@
 import { BigNumber } from 'bignumber.js';
 import classnames from 'classnames';
 import * as React from 'react';
-import { OfferType } from '../../exchange/orderbook/orderbook';
 import swapArrowsSvg from '../../icons/swap-arrows.svg';
 import { Approximate } from '../../utils/Approximate';
 import { formatAmount } from '../../utils/formatters/format';
@@ -21,6 +20,7 @@ import {
 } from '../instantForm';
 import { InstantFormWrapper } from '../InstantFormWrapper';
 import { Buying, Selling } from '../TradingSide';
+import { Simulate } from "react-dom/test-utils";
 
 function error(msg: Message | undefined) {
   if (!msg) {
@@ -163,7 +163,7 @@ export class NewTradeView extends React.Component<InstantFormState> {
           <Selling asset={sellToken}
                    amount={sellAmount}
                    onAmountChange={this.updateSellingAmount}
-                   onClick={this.changeSellingToken}
+                   change={this.props.change}
                    balance={
                      (sellToken === 'ETH' && etherBalance ||
                        balances && balances[sellToken]) || undefined
@@ -174,7 +174,7 @@ export class NewTradeView extends React.Component<InstantFormState> {
           <Buying asset={buyToken}
                   amount={buyAmount}
                   onAmountChange={this.updateBuyingAmount}
-                  onClick={this.changeBuyingToken}
+                  change={this.props.change}
                   balance={
                     (buyToken === 'ETH' && etherBalance ||
                       balances && balances[buyToken]) || undefined
@@ -195,6 +195,7 @@ export class NewTradeView extends React.Component<InstantFormState> {
       kind: InstantFormChangeKind.pairChange,
       buyToken: this.props.sellToken,
       sellToken: this.props.buyToken,
+      shouldClearInputs: true
     });
   }
 
@@ -214,22 +215,6 @@ export class NewTradeView extends React.Component<InstantFormState> {
     } as ManualChange);
   }
 
-  private changeSellingToken = () => {
-    this.props.change({
-      kind: InstantFormChangeKind.tokenChange,
-      side: OfferType.sell
-    });
-    this.showAssets();
-  }
-
-  private changeBuyingToken = () => {
-    this.props.change({
-      kind: InstantFormChangeKind.tokenChange,
-      side: OfferType.buy
-    });
-    this.showAssets();
-  }
-
   private startTx = () => {
     const priceImpact = this.props.priceImpact;
 
@@ -245,13 +230,6 @@ export class NewTradeView extends React.Component<InstantFormState> {
         view: ViewKind.finalization
       });
     }
-  }
-
-  private showAssets = () => {
-    this.props.change({
-      kind: InstantFormChangeKind.viewChange,
-      view: ViewKind.assetSelector
-    });
   }
 
   // @ts-ignore
